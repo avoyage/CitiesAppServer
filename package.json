@@ -1,0 +1,19 @@
+{
+  "name": "CitiesAppServer",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": {
+    "url": "git@bitbucket.org:parkov/citiesserver.git",
+    "type": "git"
+  },
+  "author": "Artur Khusaenov <archie.voyageur@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "bcrypt": "^0.8.7",
+    "body-parser": "^1.15.2",
+    "cors": "^2.8.1",
+    "express": "^4.14.0",
+    "express-useragent": "^1.0.4",
+    "mysql": "^2.11.1"
+  }
+}
