@@ -1,0 +1,6 @@
+{
+  "host"    : "localhost",
+  "user"    : "billie-joe",
+  "password": "%p4$$w0rd%*FUCK*Y0U*",
+  "database": "cities"
+}
