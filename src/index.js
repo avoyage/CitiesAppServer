@@ -6,13 +6,17 @@ import mysql from 'mysql';
 import bcrypt from 'bcrypt';
 import cookieSession from 'cookie-session';
 import bodyParser from 'body-parser';
+import useragent from 'express-useragent';
 
 import validator from './validator';
 import config from './config';
 
 const app = express();
-app.use(helmet());
 
+app.use(helmet());
+app.use(useragent.express());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieSession({
     name: 'session',
     keys: ['key0123', 'key234'],
@@ -24,17 +28,15 @@ app.use(cookieSession({
   })
 );
 
-
 const checkSession = (req, res, next) => {
-  if (req.session && req.session.isLoggedIn) {
+  const userAgent = req.useragent;
+  const session = req.session;
+  if (userAgent.browser === 'AwesomeProject' && session && session.isLoggedIn) {
     return next();
   } else {
     res.sendStatus(401);
   }
 };
-
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
 
 const pool = mysql.createPool(config);
 
