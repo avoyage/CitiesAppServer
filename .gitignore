@@ -1,3 +1,4 @@
+build/
 .idea/
 
 # Created by https://www.gitignore.io/api/node,webstorm,vim

@@ -17,14 +17,22 @@ const isHashValid = (hash: string): boolean => {
   return !!(hash && hash.length === 60);
 };
 
-const userCreateInputsValidator: {[id: string]: Function} = {
-  isInputsValid(username: string, hash: string, firstName: string, lastName: string): boolean {
+const isPasswordValid = (password: string): boolean => {
+  return !!(password && password.length >= 6);
+};
+
+const Validator: {[id: string]: Function} = {
+  isCreateUserInputsValid(username: string, hash: string, firstName: string, lastName: string): boolean {
     return isUsernameValid(username) &&
       isHashValid(hash) &&
       isFirstNameValid(firstName) &&
       isLastNameValid(lastName);
+  },
+
+  isLoginParamsValid(username: string, password: string) {
+    return isUsernameValid(username) && isPasswordValid(password);
   }
 };
 
-export default userCreateInputsValidator;
+export default Validator;
 
