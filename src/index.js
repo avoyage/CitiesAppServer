@@ -11,6 +11,7 @@ import config from './config';
 import validator from './validator';
 import fetchProfile from './fetchProfile';
 import updateProfile from './updateProfile';
+import createPlace from './createPlace';
 import login from './login';
 import feed from './feed';
 
@@ -112,6 +113,13 @@ pool.getConnection((err, connection) => {
   app.get('/logout', checkSession, (req, res) => {
     req.session = null;
     res.sendStatus(200);
+  });
+
+  app.post('/place', (req, res) => {
+    const placeId = req.body.placeId;
+    const mainText = req.body.mainText;
+    const secondaryText = req.body.secondaryText;
+    createPlace(connection, placeId, mainText, secondaryText).then(() => res.sendStatus(200));
   });
 });
 

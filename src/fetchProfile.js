@@ -8,6 +8,7 @@ const fetchProfile = (connection, username) => {
           firstName: rows[0].firstName,
           lastName: rows[0].lastName,
           phone: rows[0].phone,
+          placeId: rows[0].placeId,
           bio: rows[0].bio,
         });
       }
