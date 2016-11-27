@@ -43,6 +43,19 @@ const checkSession = (req, res, next) => {
   }
 };
 
+const checkBrowser = (req, res, next) => {
+  if (req.useragent.browser === 'MyApp') {
+    return next();
+  } else {
+    res.sendStatus(401);
+  }
+};
+
+const serverErrorHandler = (res, error) => {
+  res.sendStatus(503);
+  console.error(error);
+};
+
 const pool = mysql.createPool(config);
 
 pool.getConnection((err, connection) => {
@@ -55,7 +68,7 @@ pool.getConnection((err, connection) => {
           }
         });
       },
-      error => console.error('Get feed failed: ' + error)
+      error => serverErrorHandler(res, error)
     );
   });
 
@@ -65,31 +78,33 @@ pool.getConnection((err, connection) => {
 
   app.get('/profile', checkSession, (req, res) => {
     const username = req.session.username;
-    fetchProfile(connection, username).then(profile => {
-      res.format({
-        json() {
-          res.end(JSON.stringify(profile));
-        }
-      });
-    });
+    fetchProfile(connection, username).then(
+      profile => {
+        res.format({
+          json() {
+            res.end(JSON.stringify(profile));
+          }
+        });
+      },
+      error => serverErrorHandler(res, error)
+    );
   });
 
   app.post('/profile', checkSession, (req, res) => {
     const username = req.session.username;
-    updateProfile(connection, username, req.body).then(profile => {
-      res.format({
-        json() {
-          res.end(JSON.stringify(profile));
-        }
-      });
-    });
+    updateProfile(connection, username, req.body).then(
+      profile => {
+        res.format({
+          json() {
+            res.end(JSON.stringify(profile));
+          }
+        });
+      },
+      error => serverErrorHandler(res, error)
+    );
   });
 
-  app.post('/login', (req, res) => {
-    if (!req.useragent.browser === 'MyApp') {
-      return;
-    }
-
+  app.post('/login', checkBrowser, (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
 
@@ -103,7 +118,9 @@ pool.getConnection((err, connection) => {
             }
           })
         },
-        error => console.error('Login failed: ' + error)
+        error => {
+          serverErrorHandler(res, error)
+        }
       );
     } else {
       res.sendStatus(401);
@@ -115,11 +132,14 @@ pool.getConnection((err, connection) => {
     res.sendStatus(200);
   });
 
-  app.post('/place', (req, res) => {
+  app.post('/place', checkSession, (req, res) => {
     const placeId = req.body.placeId;
     const mainText = req.body.mainText;
     const secondaryText = req.body.secondaryText;
-    createPlace(connection, placeId, mainText, secondaryText).then(() => res.sendStatus(200));
+    createPlace(connection, placeId, mainText, secondaryText).then(
+      () => res.sendStatus(200),
+      error => serverErrorHandler(res, error)
+    );
   });
 });
 
