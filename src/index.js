@@ -141,6 +141,22 @@ pool.getConnection((err, connection) => {
       error => serverErrorHandler(res, error)
     );
   });
+
+  app.get('/checkUsername', checkBrowser, (req, res) => {
+    const username = req.param('username');
+    const query = `SELECT username FROM user WHERE username='${username}'`;
+    connection.query(query, (error, rows) => {
+      if (error) {
+        serverErrorHandler(res, error)
+      } else {
+        res.format({
+          json() {
+            res.end(JSON.stringify({isExist: !!rows[0], username: username}));
+          }
+        });
+      }
+    });
+  });
 });
 
 app.listen(process.env.PORT || 5000);
