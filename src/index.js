@@ -74,6 +74,16 @@ pool.getConnection((err, connection) => {
 
   app.get('/ping', checkSession, (req, res) => {
     res.sendStatus(200);
+    fetchProfile(connection, username).then(
+      profile => {
+        res.format({
+          json() {
+            res.end(JSON.stringify(profile));
+          }
+        });
+      },
+      error => serverErrorHandler(res, error)
+    );
   });
 
   app.get('/profile', checkSession, (req, res) => {
