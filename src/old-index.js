@@ -11,6 +11,8 @@ import rollbar from 'rollbar';
 import config from './config';
 import validator from './validator';
 import fetchProfile from './fetchProfile';
+import updateProfile from './updateProfile';
+import createPlace from './createPlace';
 import login from './login';
 import feed from './feed';
 
@@ -19,7 +21,7 @@ app.use(helmet());
 app.use(useragent.express());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
-// Use the rollbar error handler to send exceptions to rollbar
+// Use the rollbar error handler to send exceptions to your rollbar account
 app.use(rollbar.errorHandler('6a5259c4ada44e52b0732a9d9167a422'));
 app.use(cookieSession({
         name: 'session',
@@ -32,13 +34,16 @@ app.use(cookieSession({
     })
 );
 
-const BROWSER_NAME = 'AwesomeProject';
+rollbar.init("6a5259c4ada44e52b0732a9d9167a422", {
+    environment: "staging",
+    endpoint: "https://api.rollbar.com/api/1/"
+});
 
 const checkSession = (req, res, next) => {
     const userAgent = req.useragent;
     const session = req.session;
 
-    if (userAgent.browser === BROWSER_NAME && session && session.username) {
+    if (userAgent.browser === 'MyApp' && session && session.username) {
         return next();
     } else {
         res.sendStatus(401);
@@ -46,7 +51,7 @@ const checkSession = (req, res, next) => {
 };
 
 const checkBrowser = (req, res, next) => {
-    if (req.useragent.browser === BROWSER_NAME) {
+    if (req.useragent.browser === 'MyApp') {
         return next();
     } else {
         res.sendStatus(401);
@@ -61,8 +66,6 @@ const serverErrorHandler = (res, error) => {
 const pool = mysql.createPool(config);
 
 pool.getConnection((error, connection) => {
-        if (error) console.error(error);
-
         app.get('/feed', checkSession, (req, res) => {
             feed(connection).then(
                 result => {
@@ -104,13 +107,25 @@ pool.getConnection((error, connection) => {
             );
         });
 
+        // app.post('/profile', checkSession, (req, res) => {
+        //   const username = req.session.username;
+        //   updateProfile(connection, username, req.body).then(
+        //     profile => {
+        //       res.format({
+        //         json() {
+        //           res.end(JSON.stringify(profile));
+        //         }
+        //       });
+        //     },
+        //     error => serverErrorHandler(res, error)
+        //   );
+        // });
+
         app.post('/login', checkBrowser, (req, res) => {
             const username = req.body.username;
             const password = req.body.password;
 
-
             if (validator.isLoginParamsValid(username, password)) {
-                console.log(connection, username, password,1);
                 login(connection, username, password).then(
                     user => {
                         req.session.username = username;
@@ -129,10 +144,20 @@ pool.getConnection((error, connection) => {
             }
         });
 
-        app.get('/logout', (req, res) => {
+        app.get('/logout', checkSession, (req, res) => {
             req.session = null;
             res.sendStatus(200);
         });
+
+        // app.post('/place', checkSession, (req, res) => {
+        //   const placeId = req.body.placeId;
+        //   const mainText = req.body.mainText;
+        //   const secondaryText = req.body.secondaryText;
+        //   createPlace(connection, placeId, mainText, secondaryText).then(
+        //     () => res.sendStatus(200),
+        //     error => serverErrorHandler(res, error)
+        //   );
+        // });
 
         app.get('/checkUsername', checkBrowser, (req, res) => {
             const username = req.param('username');
@@ -149,8 +174,8 @@ pool.getConnection((error, connection) => {
                 }
             });
         });
-    }
+    },
+    error => serverErrorHandler(res, error)
 );
 
 app.listen(process.env.PORT || 5000);
-console.log('START');

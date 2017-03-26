@@ -9,9 +9,6 @@ const login = (connection, username, password) => {
           username: rows[0].username,
           firstName: rows[0].firstName,
           lastName: rows[0].lastName,
-          phone: rows[0].phone,
-          placeId: rows[0].placeId,
-          bio: rows[0].bio,
         });
       }
     });
